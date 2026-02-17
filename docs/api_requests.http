@@ -1,0 +1,34 @@
+### 1. Register User
+POST http://localhost:3002/auth/register
+Content-Type: application/json
+
+{
+    "email": "testuser@example.com",
+    "password": "securePass123",
+    "name": "Test User"
+}
+
+### 2. Login User (Copy the accessToken from response)
+# @name login
+POST http://localhost:3002/auth/login
+Content-Type: application/json
+
+{
+    "email": "testuser@example.com",
+    "password": "securePass123"
+}
+
+### 3. Access Protected Route (Me)
+# Replace {{login.response.body.accessToken}} with your actual token if automatic variable doesn't work
+GET http://localhost:3002/auth/me
+Authorization: Bearer {{login.response.body.accessToken}}
+
+### 4. Admin Route (Should Fail for Normal User)
+GET http://localhost:3002/auth/admin
+Authorization: Bearer {{login.response.body.accessToken}}
+
+### 5. Refresh Token (Uses Cookie Automatically)
+POST http://localhost:3002/auth/refresh
+
+### 6. Logout
+POST http://localhost:3002/auth/logout
