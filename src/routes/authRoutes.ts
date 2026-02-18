@@ -2,12 +2,14 @@ import { Router, Request, Response } from 'express';
 import { register, login, refreshToken, logout } from '../controllers/authController';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { adminMiddleware } from '../middleware/roleMiddleware';
+import { validate } from '../middleware/validateRequest';
+import { registerSchema, loginSchema } from '../utils/validationSchemas';
 
 const router = Router();
 
 // --- PUBLIC ROUTES ---
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register', validate(registerSchema), register);
+router.post('/login', validate(loginSchema), login);
 router.post('/refresh', refreshToken);
 router.post('/logout', logout);
 
