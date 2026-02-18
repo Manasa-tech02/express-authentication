@@ -6,11 +6,8 @@ import { generateToken, generateRefreshToken, verifyRefreshToken } from '../util
 // --- REGISTER ---
 export const register = async (req: Request, res: Response) => {
     try {
+        // Data is already validated & sanitized by Zod middleware
         const { email, password, name } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required' });
-        }
 
         // 1. Check if user exists
         const existingUser = await prisma.user.findUnique({ where: { email } });
