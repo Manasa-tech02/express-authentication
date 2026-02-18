@@ -10,6 +10,8 @@ import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 
+import { globalLimiter } from './middleware/rateLimiter';
+
 dotenv.config();
 
 const app = express();
@@ -21,6 +23,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use(helmet());
 app.use(cors());
+app.use(globalLimiter);          // Rate limit all routes
 app.use(morgan('dev'));  //in production combined
 app.use(express.json());
 app.use(cookieParser());
