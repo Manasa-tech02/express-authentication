@@ -32,6 +32,14 @@ export const loginSchema = z.object({
         .min(1, 'Password is required'),
 });
 
+// --- UPDATE ROLE SCHEMA (Admin) ---
+export const updateRoleSchema = z.object({
+    role: z.enum(['user', 'admin'], {
+        message: 'Role must be either "user" or "admin"',
+    }),
+});
+
 // Export Types (Zod infers them automatically!)
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type UpdateRoleInput = z.infer<typeof updateRoleSchema>;

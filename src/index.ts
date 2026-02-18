@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import authRoutes from './routes/authRoutes';
+import adminRoutes from './routes/adminRoutes';
 import { errorHandler } from './middleware/errorHandler';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
@@ -29,6 +30,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
 
 // Error Handler (Must be last)
 app.use(errorHandler);
