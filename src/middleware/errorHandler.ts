@@ -1,15 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
+import { AppError } from '../utils/errors';
 
-export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-    console.error(err.stack);
+export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
+    // If it's our custom AppError, use its status code and message
+    if (err instanceof AppError) {
+        return res.status(err.statusCode).json({
+            success: false,
+            message: err.message,
+        });
+    }
 
-    const status = err.status || 500;
-    const message = err.message || 'Internal Server Error';
+    // Unknown/unexpected errors (bugs)
+    console.error('Unexpected Error:', err.stack);
 
-    res.status(status).json({
+    res.status(500).json({
         success: false,
-        message,
+        message: 'Internal Server Error',
         // Only show stack trace in development
-        error: process.env.NODE_ENV === 'development' ? err.stack : {}
+        error: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     });
 };

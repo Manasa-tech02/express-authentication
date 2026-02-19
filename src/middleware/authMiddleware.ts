@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { UnauthorizedError, ForbiddenError } from '../utils/errors';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
@@ -13,7 +14,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: 'Unauthorized: No token provided' });
+        throw new UnauthorizedError('No token provided');
     }
 
     const token = authHeader.split(' ')[1]; // Get the part after "Bearer"
@@ -27,6 +28,6 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
 
         next(); // Proceed
     } catch (error) {
-        return res.status(403).json({ message: 'Forbidden: Invalid token' });
+        throw new ForbiddenError('Invalid token');
     }
 };

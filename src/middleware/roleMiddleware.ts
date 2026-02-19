@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { UnauthorizedError, ForbiddenError } from '../utils/errors';
 
 interface AuthRequest extends Request {
     user?: any;
@@ -6,11 +7,11 @@ interface AuthRequest extends Request {
 
 export const adminMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        throw new UnauthorizedError('Unauthorized');
     }
 
     if (req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Access Denied: Admins Only' });
+        throw new ForbiddenError('Access Denied: Admins Only');
     }
 
     next();
