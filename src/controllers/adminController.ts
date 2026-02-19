@@ -1,5 +1,6 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import prisma from '../lib/prisma';
+import { BadRequestError, NotFoundError } from '../utils/errors';
 
 // Fields to return (EXCLUDE password)
 const userSelect = {
@@ -12,7 +13,7 @@ const userSelect = {
 };
 
 // --- GET ALL USERS (with Pagination) ---
-export const getAllUsers = async (req: Request, res: Response) => {
+export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
@@ -37,17 +38,17 @@ export const getAllUsers = async (req: Request, res: Response) => {
             totalPages: Math.ceil(total / limit),
         });
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching users', error });
+        next(error);
     }
 };
 
 // --- GET USER BY ID ---
-export const getUserById = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const id = parseInt(req.params.id as string);
 
         if (isNaN(id)) {
-            return res.status(400).json({ message: 'Invalid user ID' });
+            throw new BadRequestError('Invalid user ID');
         }
 
         const user = await prisma.user.findUnique({
@@ -56,29 +57,29 @@ export const getUserById = async (req: Request, res: Response) => {
         });
 
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            throw new NotFoundError('User not found');
         }
 
         res.json(user);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching user', error });
+        next(error);
     }
 };
 
 // --- UPDATE USER ROLE ---
-export const updateUserRole = async (req: Request, res: Response) => {
+export const updateUserRole = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const id = parseInt(req.params.id as string);
         const { role } = req.body; // Validated by Zod middleware
 
         if (isNaN(id)) {
-            return res.status(400).json({ message: 'Invalid user ID' });
+            throw new BadRequestError('Invalid user ID');
         }
 
         // Check if user exists
         const existingUser = await prisma.user.findUnique({ where: { id } });
         if (!existingUser) {
-            return res.status(404).json({ message: 'User not found' });
+            throw new NotFoundError('User not found');
         }
 
         // Update the role
@@ -90,23 +91,23 @@ export const updateUserRole = async (req: Request, res: Response) => {
 
         res.json({ message: `User role updated to '${role}'`, user: updatedUser });
     } catch (error) {
-        res.status(500).json({ message: 'Error updating user role', error });
+        next(error);
     }
 };
 
 // --- DELETE USER ---
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const id = parseInt(req.params.id as string);
 
         if (isNaN(id)) {
-            return res.status(400).json({ message: 'Invalid user ID' });
+            throw new BadRequestError('Invalid user ID');
         }
 
         // Check if user exists
         const existingUser = await prisma.user.findUnique({ where: { id } });
         if (!existingUser) {
-            return res.status(404).json({ message: 'User not found' });
+            throw new NotFoundError('User not found');
         }
 
         // Delete user (cascades to refresh tokens due to onDelete: Cascade)
@@ -114,6 +115,6 @@ export const deleteUser = async (req: Request, res: Response) => {
 
         res.json({ message: 'User deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting user', error });
+        next(error);
     }
 };

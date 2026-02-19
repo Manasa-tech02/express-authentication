@@ -1,10 +1,11 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma';
 import { generateToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
+import { ConflictError, UnauthorizedError } from '../utils/errors';
 
 // --- REGISTER ---
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Data is already validated & sanitized by Zod middleware
         const { email, password, name } = req.body;
@@ -12,7 +13,7 @@ export const register = async (req: Request, res: Response) => {
         // 1. Check if user exists
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+            throw new ConflictError('User already exists');
         }
 
         // 2. Hash Password (The "Safe")
@@ -30,18 +31,18 @@ export const register = async (req: Request, res: Response) => {
 
         res.status(201).json({ message: 'User registered successfully', userId: user.id });
     } catch (error) {
-        res.status(500).json({ message: 'Error registering user', error });
+        next(error);
     }
 };
 
 // --- LOGIN ---
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password } = req.body;
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            throw new UnauthorizedError('Invalid credentials');
         }
 
         // Generate Tokens
@@ -67,7 +68,7 @@ export const login = async (req: Request, res: Response) => {
 
         res.json({ message: 'Login successful', accessToken });
     } catch (error) {
-        res.status(500).json({ message: 'Error logging in', error });
+        next(error);
     }
 };
 
