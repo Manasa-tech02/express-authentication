@@ -11,7 +11,7 @@
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write src/",
-    "format:check": "prettier --check src/",
+    "format:check": "prettier --check src/",    
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:pull": "prisma db pull",
